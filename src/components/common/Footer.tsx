@@ -16,7 +16,7 @@ export default function Footer() {
       }}
     >
       <Typography variant="body2" color="text.secondary">
-        {APP_NAME} v{APP_VERSION} — Desenvolvido com ❤️ usando GitHub Copilot
+        {APP_NAME} v{APP_VERSION}
       </Typography>
     </Box>
   )
