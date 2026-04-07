@@ -38,6 +38,7 @@ export interface Fueling {
 
 export interface FuelingRequest {
   pumpId: number
+  fuelTypeId?: number
   fuelingDate: string
   liters: number
   totalValue: number

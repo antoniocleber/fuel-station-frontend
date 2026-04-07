@@ -10,7 +10,9 @@ export interface FuelPumpFormValues {
 
 export interface FuelingFormValues {
   pumpId: number
+  fuelTypeId: number
   fuelingDate: string
   liters: number
   totalValue: number
+  inputMode: 'totalValue' | 'liters'
 }

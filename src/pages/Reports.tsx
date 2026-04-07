@@ -1,8 +1,9 @@
+import { useMemo } from 'react'
 import { Box, Typography, Card, CardContent, Grid } from '@mui/material'
 import Layout from '@/components/common/Layout'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import { useFuelings } from '@/hooks/useFuelings'
-import { useFuelTypes } from '@/hooks/useFuelTypes'
+import { useFuelPumps } from '@/hooks/useFuelPumps'
 import { formatCurrency, formatLiters } from '@/utils/formatters'
 import {
   BarChart,
@@ -13,13 +14,44 @@ import {
   Tooltip,
   ResponsiveContainer,
   Legend,
+  PieChart,
+  Pie,
+  Cell,
 } from 'recharts'
+
+const COLORS = ['#1976d2', '#388e3c', '#f57c00', '#d32f2f', '#7b1fa2', '#0097a7', '#689f38', '#e64a19']
 
 export default function Reports() {
   const { fuelings, isLoading: loadingFuelings } = useFuelings()
-  const { fuelTypes, isLoading: loadingTypes } = useFuelTypes()
+  const { fuelPumps, isLoading: loadingPumps } = useFuelPumps()
 
-  if (loadingFuelings || loadingTypes) {
+  const pumpChartData = useMemo(() => {
+    const pumpMap = new Map<number, { name: string; liters: number; revenue: number; count: number }>()
+
+    for (const pump of fuelPumps) {
+      pumpMap.set(pump.id, { name: pump.name, liters: 0, revenue: 0, count: 0 })
+    }
+
+    for (const fueling of fuelings) {
+      const existing = pumpMap.get(fueling.pumpId)
+      if (existing) {
+        existing.liters += fueling.liters
+        existing.revenue += fueling.totalValue
+        existing.count += 1
+      } else {
+        pumpMap.set(fueling.pumpId, {
+          name: fueling.pump?.name ?? `Bomba ${fueling.pumpId}`,
+          liters: fueling.liters,
+          revenue: fueling.totalValue,
+          count: 1,
+        })
+      }
+    }
+
+    return Array.from(pumpMap.values())
+  }, [fuelings, fuelPumps])
+
+  if (loadingFuelings || loadingPumps) {
     return (
       <Layout>
         <LoadingSpinner fullPage />
@@ -30,11 +62,6 @@ export default function Reports() {
   const totalLiters = fuelings.reduce((sum, f) => sum + f.liters, 0)
   const totalRevenue = fuelings.reduce((sum, f) => sum + f.totalValue, 0)
   const avgValuePerFueling = fuelings.length > 0 ? totalRevenue / fuelings.length : 0
-
-  const chartData = fuelTypes.map(ft => ({
-    name: ft.name,
-    pricePerLiter: ft.pricePerLiter,
-  }))
 
   return (
     <Layout>
@@ -86,23 +113,98 @@ export default function Reports() {
         </Grid>
       </Grid>
 
-      <Card>
-        <CardContent>
-          <Typography variant="h6" gutterBottom>
-            Preço por Litro por Tipo de Combustível
-          </Typography>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip formatter={(v: number) => formatCurrency(v)} />
-              <Legend />
-              <Bar dataKey="pricePerLiter" name="Preço/Litro" fill="#1976d2" />
-            </BarChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
+      <Grid container spacing={3}>
+        <Grid item xs={12} md={6}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Litros Abastecidos por Bomba
+              </Typography>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={pumpChartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip formatter={(v: number) => `${v.toFixed(2)} L`} />
+                  <Legend />
+                  <Bar dataKey="liters" name="Litros" fill="#1976d2" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Receita por Bomba
+              </Typography>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={pumpChartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip formatter={(v: number) => formatCurrency(v)} />
+                  <Legend />
+                  <Bar dataKey="revenue" name="Receita (R$)" fill="#388e3c" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Quantidade de Abastecimentos por Bomba
+              </Typography>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={pumpChartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis allowDecimals={false} />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="count" name="Abastecimentos" fill="#f57c00" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Distribuição de Receita por Bomba
+              </Typography>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={pumpChartData.filter(d => d.revenue > 0)}
+                    dataKey="revenue"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={100}
+                    label={({ name, percent }) =>
+                      `${name}: ${(percent * 100).toFixed(0)}%`
+                    }
+                  >
+                    {pumpChartData.filter(d => d.revenue > 0).map((_, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(v: number) => formatCurrency(v)} />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
     </Layout>
   )
 }

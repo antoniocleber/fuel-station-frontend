@@ -21,6 +21,9 @@ export const fuelPumpSchema = z.object({
 
 export const fuelingSchema = z.object({
   pumpId: z.number({ invalid_type_error: 'Selecione uma bomba' }).positive('Bomba inválida'),
+  fuelTypeId: z
+    .number({ invalid_type_error: 'Selecione um tipo de combustível' })
+    .positive('Tipo de combustível inválido'),
   fuelingDate: z.string().min(1, 'Data é obrigatória'),
   liters: z
     .number({ invalid_type_error: 'Litros deve ser um número' })
@@ -28,4 +31,5 @@ export const fuelingSchema = z.object({
   totalValue: z
     .number({ invalid_type_error: 'Valor deve ser um número' })
     .positive('Valor deve ser positivo'),
+  inputMode: z.enum(['totalValue', 'liters']).default('totalValue'),
 })
