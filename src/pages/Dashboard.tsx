@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { Grid, Card, CardContent, Typography, Box } from '@mui/material'
 import LocalGasStationIcon from '@mui/icons-material/LocalGasStation'
 import WaterIcon from '@mui/icons-material/Water'
@@ -8,7 +9,9 @@ import LoadingSpinner from '@/components/common/LoadingSpinner'
 import { useFuelTypes } from '@/hooks/useFuelTypes'
 import { useFuelPumps } from '@/hooks/useFuelPumps'
 import { useFuelings } from '@/hooks/useFuelings'
-import { formatCurrency } from '@/utils/formatters'
+import { formatCurrency, formatDate } from '@/utils/formatters'
+
+const DASHBOARD_FILTERS = { page: 0, limit: 9999 }
 
 interface KpiCardProps {
   title: string
@@ -50,9 +53,20 @@ function KpiCard({ title, value, icon, color }: KpiCardProps) {
 export default function Dashboard() {
   const { fuelTypes, isLoading: loadingTypes } = useFuelTypes()
   const { fuelPumps, isLoading: loadingPumps } = useFuelPumps()
-  const { fuelings, totalElements, isLoading: loadingFuelings } = useFuelings()
+  const { fuelings, totalElements, isLoading: loadingFuelings } = useFuelings(DASHBOARD_FILTERS)
 
-  const totalRevenue = fuelings.reduce((sum, f) => sum + f.totalValue, 0)
+  const totalRevenue = useMemo(
+    () => fuelings.reduce((sum, f) => sum + (f.totalValue ?? 0), 0),
+    [fuelings],
+  )
+
+  const latestFuelings = useMemo(
+    () =>
+      [...fuelings]
+        .sort((a, b) => new Date(b.fuelingDate).getTime() - new Date(a.fuelingDate).getTime())
+        .slice(0, 5),
+    [fuelings],
+  )
 
   if (loadingTypes || loadingPumps || loadingFuelings) {
     return (
@@ -100,7 +114,7 @@ export default function Dashboard() {
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <KpiCard
-            title="Faturamento (página)"
+            title="Faturamento"
             value={formatCurrency(totalRevenue)}
             icon={<TrendingUpIcon />}
             color="#7b1fa2"
@@ -112,13 +126,24 @@ export default function Dashboard() {
         <Typography variant="h6" gutterBottom>
           Últimos Abastecimentos
         </Typography>
-        {fuelings.slice(0, 5).map(f => (
+        {latestFuelings.length === 0 && (
+          <Typography variant="body2" color="text.secondary">
+            Nenhum abastecimento registrado.
+          </Typography>
+        )}
+        {latestFuelings.map(f => (
           <Card key={f.id} sx={{ mb: 1 }}>
             <CardContent sx={{ py: 1.5, '&:last-child': { pb: 1.5 } }}>
               <Box display="flex" justifyContent="space-between" alignItems="center">
-                <Typography variant="body2">
-                  Bomba {f.pump?.name ?? f.pumpId} — {f.liters} L
-                </Typography>
+                <Box>
+                  <Typography variant="body2">
+                    Bomba {f.pump?.name ?? f.pumpId} — {f.liters} L
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {formatDate(f.fuelingDate)}
+                    {f.fuelType?.name ? ` • ${f.fuelType.name}` : ''}
+                  </Typography>
+                </Box>
                 <Typography variant="body2" fontWeight="bold" color="primary">
                   {formatCurrency(f.totalValue)}
                 </Typography>
