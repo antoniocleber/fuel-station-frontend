@@ -65,7 +65,7 @@ export default function FuelingsTable({
             {rows.map(row => (
               <TableRow key={row.id} hover>
                 <TableCell>{row.id}</TableCell>
-                <TableCell>{row.pump?.name ?? row.pumpId}</TableCell>
+                <TableCell>{row.pump.name}</TableCell>
                 <TableCell>{formatDate(row.fuelingDate)}</TableCell>
                 <TableCell>{formatLiters(row.liters)}</TableCell>
                 <TableCell>{formatCurrency(row.totalValue)}</TableCell>

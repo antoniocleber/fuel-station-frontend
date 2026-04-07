@@ -11,7 +11,7 @@ import { useFuelPumps } from '@/hooks/useFuelPumps'
 import { useFuelings } from '@/hooks/useFuelings'
 import { formatCurrency, formatDate } from '@/utils/formatters'
 
-const DASHBOARD_FILTERS = { page: 0, limit: 9999 }
+const DASHBOARD_FILTERS = { page: 0, size: 9999 }
 
 interface KpiCardProps {
   title: string
@@ -137,11 +137,11 @@ export default function Dashboard() {
               <Box display="flex" justifyContent="space-between" alignItems="center">
                 <Box>
                   <Typography variant="body2">
-                    Bomba {f.pump?.name ?? f.pumpId} — {f.liters} L
+                    Bomba {f.pump.name} — {f.liters} L
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
                     {formatDate(f.fuelingDate)}
-                    {f.fuelType?.name ? ` • ${f.fuelType.name}` : ''}
+                    {f.fuelType.name ? ` • ${f.fuelType.name}` : ''}
                   </Typography>
                 </Box>
                 <Typography variant="body2" fontWeight="bold" color="primary">

@@ -6,4 +6,5 @@ export const ENDPOINTS = {
   FUEL_TYPES: '/fuel-types',
   FUEL_PUMPS: '/fuel-pumps',
   FUELINGS: '/fuelings',
+  REPORTS: '/reports',
 } as const

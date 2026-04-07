@@ -2,8 +2,7 @@ import { useMemo } from 'react'
 import { Box, Typography, Card, CardContent, Grid } from '@mui/material'
 import Layout from '@/components/common/Layout'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
-import { useFuelings } from '@/hooks/useFuelings'
-import { useFuelPumps } from '@/hooks/useFuelPumps'
+import { useReports } from '@/hooks/useReports'
 import { formatCurrency, formatLiters } from '@/utils/formatters'
 import {
   BarChart,
@@ -22,36 +21,19 @@ import {
 const COLORS = ['#1976d2', '#388e3c', '#f57c00', '#d32f2f', '#7b1fa2', '#0097a7', '#689f38', '#e64a19']
 
 export default function Reports() {
-  const { fuelings, isLoading: loadingFuelings } = useFuelings()
-  const { fuelPumps, isLoading: loadingPumps } = useFuelPumps()
+  const { report, isLoading } = useReports()
 
   const pumpChartData = useMemo(() => {
-    const pumpMap = new Map<number, { name: string; liters: number; revenue: number; count: number }>()
+    if (!report) return []
+    return report.pumps.map(p => ({
+      name: p.pumpName,
+      liters: p.totalLiters,
+      revenue: p.totalValue,
+      count: p.fuelingsCount,
+    }))
+  }, [report])
 
-    for (const pump of fuelPumps) {
-      pumpMap.set(pump.id, { name: pump.name, liters: 0, revenue: 0, count: 0 })
-    }
-
-    for (const fueling of fuelings) {
-      const existing = pumpMap.get(fueling.pumpId)
-      if (existing) {
-        existing.liters += fueling.liters
-        existing.revenue += fueling.totalValue
-        existing.count += 1
-      } else {
-        pumpMap.set(fueling.pumpId, {
-          name: fueling.pump?.name ?? `Bomba ${fueling.pumpId}`,
-          liters: fueling.liters,
-          revenue: fueling.totalValue,
-          count: 1,
-        })
-      }
-    }
-
-    return Array.from(pumpMap.values())
-  }, [fuelings, fuelPumps])
-
-  if (loadingFuelings || loadingPumps) {
+  if (isLoading) {
     return (
       <Layout>
         <LoadingSpinner fullPage />
@@ -59,9 +41,10 @@ export default function Reports() {
     )
   }
 
-  const totalLiters = fuelings.reduce((sum, f) => sum + f.liters, 0)
-  const totalRevenue = fuelings.reduce((sum, f) => sum + f.totalValue, 0)
-  const avgValuePerFueling = fuelings.length > 0 ? totalRevenue / fuelings.length : 0
+  const totalLiters = report?.totalLiters ?? 0
+  const totalRevenue = report?.totalValue ?? 0
+  const totalFuelings = report?.totalFuelings ?? 0
+  const avgValuePerFueling = totalFuelings > 0 ? totalRevenue / totalFuelings : 0
 
   return (
     <Layout>

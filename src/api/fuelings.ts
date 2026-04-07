@@ -5,29 +5,13 @@ export const fuelingsApi = {
   getAll: async (filters?: FuelingFilter): Promise<PaginatedResponse<Fueling>> => {
     const params = {
       page: filters?.page ?? 0,
-      size: filters?.limit ?? 10,
+      size: filters?.size ?? 20,
       ...(filters?.pumpId && { pumpId: filters.pumpId }),
       ...(filters?.startDate && { startDate: filters.startDate }),
       ...(filters?.endDate && { endDate: filters.endDate }),
     }
-    const { data } = await client.get('/fuelings', { params })
-
-    // Handle both array and paginated response formats
-    if (Array.isArray(data)) {
-      return {
-        content: data,
-        totalElements: data.length,
-        totalPages: 1,
-        currentPage: 0,
-      }
-    }
-
-    return {
-      content: data.content ?? [],
-      totalElements: data.totalElements ?? 0,
-      totalPages: data.totalPages ?? 0,
-      currentPage: data.currentPage ?? data.number ?? 0,
-    }
+    const { data } = await client.get<PaginatedResponse<Fueling>>('/fuelings', { params })
+    return data
   },
 
   getById: async (id: number): Promise<Fueling> => {

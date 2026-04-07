@@ -17,7 +17,7 @@ export default function Filters({ filters, pumps, onSearch, onReload, onClear }:
   const [localFilters, setLocalFilters] = useState<FuelingFilter>(filters)
 
   const handleClear = () => {
-    setLocalFilters({ page: filters.page, limit: filters.limit })
+    setLocalFilters({ page: filters.page, size: filters.size })
     onClear()
   }
 

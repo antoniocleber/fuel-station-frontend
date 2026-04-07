@@ -11,11 +11,23 @@ export interface FuelTypeRequest {
   pricePerLiter: number
 }
 
+export interface FuelTypeSummary {
+  id: number
+  name: string
+  pricePerLiter: number
+}
+
+export interface FuelPumpSummary {
+  id: number
+  name: string
+  fuelTypes: FuelTypeSummary[]
+}
+
 export interface FuelPump {
   id: number
   name: string
   fuelTypeIds?: number[]
-  fuelTypes?: FuelType[]
+  fuelTypes?: FuelTypeSummary[]
   createdAt?: string
   updatedAt?: string
 }
@@ -27,21 +39,21 @@ export interface FuelPumpRequest {
 
 export interface Fueling {
   id: number
-  pumpId: number
   fuelingDate: string
   liters: number
   totalValue: number
-  fuelType?: FuelType
-  pump?: FuelPump
+  pump: FuelPumpSummary
+  fuelType: FuelTypeSummary
   createdAt?: string
+  updatedAt?: string
 }
 
 export interface FuelingRequest {
   pumpId: number
-  fuelTypeId?: number
+  fuelTypeId: number
   fuelingDate: string
-  liters: number
-  totalValue: number
+  liters?: number
+  totalValue?: number
 }
 
 export interface FuelingFilter {
@@ -49,7 +61,7 @@ export interface FuelingFilter {
   startDate?: string
   endDate?: string
   page?: number
-  limit?: number
+  size?: number
 }
 
 export interface ApiError {
@@ -60,7 +72,36 @@ export interface ApiError {
 
 export interface PaginatedResponse<T> {
   content: T[]
+  page: number
+  size: number
   totalElements: number
   totalPages: number
-  currentPage: number
+  first: boolean
+  last: boolean
+}
+
+export interface ReportResponse {
+  pumps: PumpReport[]
+  totalLiters: number
+  totalValue: number
+  totalFuelings: number
+}
+
+export interface PumpReport {
+  pumpId: number
+  pumpName: string
+  fuelTypes: FuelTypeSummary[]
+  fuelings: ReportFuelingDetail[]
+  totalLiters: number
+  totalValue: number
+  fuelingsCount: number
+}
+
+export interface ReportFuelingDetail {
+  id: number
+  fuelingDate: string
+  liters: number
+  totalValue: number
+  fuelType: FuelTypeSummary
+  createdAt?: string
 }

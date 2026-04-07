@@ -66,6 +66,7 @@ export const useFuelings = (filters?: FuelingFilter) => {
     fuelings: data?.content ?? [],
     totalElements: data?.totalElements ?? 0,
     totalPages: data?.totalPages ?? 0,
+    currentPage: data?.page ?? 0,
     isLoading,
     error,
     refetch,

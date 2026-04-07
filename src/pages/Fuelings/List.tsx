@@ -25,7 +25,7 @@ import { DEFAULT_PAGE_SIZE } from '@/utils/constants'
 import { formatCurrency, formatLiters } from '@/utils/formatters'
 
 const FORM_ID = 'fueling-form'
-const EMPTY_FILTERS: FuelingFilter = { page: 0, limit: DEFAULT_PAGE_SIZE }
+const EMPTY_FILTERS: FuelingFilter = { page: 0, size: DEFAULT_PAGE_SIZE }
 
 export default function FuelingsList() {
   const [filters, setFilters] = useState<FuelingFilter>(EMPTY_FILTERS)
@@ -72,7 +72,7 @@ export default function FuelingsList() {
   }
 
   const handleSearch = (newFilters: FuelingFilter) => {
-    setFilters(f => ({ ...newFilters, limit: f.limit }))
+    setFilters(f => ({ ...newFilters, size: f.size }))
   }
 
   const handleReload = () => {
@@ -120,10 +120,10 @@ export default function FuelingsList() {
             component="div"
             count={totalElements}
             page={filters.page ?? 0}
-            rowsPerPage={filters.limit ?? DEFAULT_PAGE_SIZE}
+            rowsPerPage={filters.size ?? DEFAULT_PAGE_SIZE}
             onPageChange={(_, page) => setFilters(f => ({ ...f, page }))}
             onRowsPerPageChange={e =>
-              setFilters(f => ({ ...f, limit: parseInt(e.target.value, 10), page: 0 }))
+              setFilters(f => ({ ...f, size: parseInt(e.target.value, 10), page: 0 }))
             }
             labelRowsPerPage="Linhas por página"
           />

@@ -1,10 +1,12 @@
 import client from './client'
-import { FuelType, FuelTypeRequest } from '@/types/api'
+import { FuelType, FuelTypeRequest, PaginatedResponse } from '@/types/api'
 
 export const fuelTypesApi = {
   getAll: async (): Promise<FuelType[]> => {
-    const { data } = await client.get<FuelType[]>('/fuel-types')
-    return data
+    const { data } = await client.get<PaginatedResponse<FuelType>>('/fuel-types', {
+      params: { size: 1000 },
+    })
+    return data.content
   },
 
   getById: async (id: number): Promise<FuelType> => {

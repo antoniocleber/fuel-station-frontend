@@ -48,7 +48,7 @@ export default function FuelingForm({
   } = useForm<FuelingFormValues>({
     schema: fuelingSchema,
     defaultValues: {
-      pumpId: defaultValues?.pumpId ?? 0,
+      pumpId: defaultValues?.pump?.id ?? 0,
       fuelTypeId: defaultValues?.fuelType?.id ?? 0,
       fuelingDate: defaultValues?.fuelingDate?.substring(0, 10) ?? '',
       liters: defaultValues?.liters ?? 0,
@@ -108,7 +108,7 @@ export default function FuelingForm({
 
   useEffect(() => {
     reset({
-      pumpId: defaultValues?.pumpId ?? 0,
+      pumpId: defaultValues?.pump?.id ?? 0,
       fuelTypeId: defaultValues?.fuelType?.id ?? 0,
       fuelingDate: defaultValues?.fuelingDate?.substring(0, 10) ?? '',
       liters: defaultValues?.liters ?? 0,
