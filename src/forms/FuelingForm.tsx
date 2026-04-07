@@ -21,6 +21,8 @@ import { FuelingFormValues } from '@/types/forms'
 import { Fueling, FuelPump } from '@/types/api'
 import { formatCurrency } from '@/utils/formatters'
 
+const parseNumericInput = (value: string): number => parseFloat(value) || 0
+
 interface FuelingFormProps {
   onSubmit: (data: FuelingFormValues) => void
   defaultValues?: Partial<Fueling>
@@ -261,7 +263,7 @@ export default function FuelingForm({
                   inputProps={{ step: '0.01', min: '0' }}
                   error={!!errors.totalValue}
                   helperText={errors.totalValue?.message}
-                  onChange={e => field.onChange(parseFloat(e.target.value) || 0)}
+                  onChange={e => field.onChange(parseNumericInput(e.target.value))}
                   disabled={inputMode === 'liters' && !isEditing}
                 />
               )}
@@ -281,7 +283,7 @@ export default function FuelingForm({
                   inputProps={{ step: '0.01', min: '0' }}
                   error={!!errors.liters}
                   helperText={errors.liters?.message}
-                  onChange={e => field.onChange(parseFloat(e.target.value) || 0)}
+                  onChange={e => field.onChange(parseNumericInput(e.target.value))}
                   disabled={inputMode === 'totalValue' && !isEditing}
                 />
               )}
