@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { fuelingsApi } from '@/api/fuelings'
-import { FuelingRequest, FuelingFilter } from '@/types/api'
+import { Fueling, FuelingRequest, FuelingFilter } from '@/types/api'
 import { useNotification } from './useNotification'
 
 const QUERY_KEY = ['fuelings']
@@ -13,6 +13,7 @@ export const useFuelings = (filters?: FuelingFilter) => {
     data,
     isLoading,
     error,
+    refetch,
   } = useQuery({
     queryKey: [...QUERY_KEY, filters],
     queryFn: () => fuelingsApi.getAll(filters),
@@ -28,6 +29,15 @@ export const useFuelings = (filters?: FuelingFilter) => {
       showNotification('Erro ao registrar abastecimento', 'error')
     },
   })
+
+  const createAsync = async (payload: FuelingRequest): Promise<Fueling | undefined> => {
+    try {
+      const result = await createMutation.mutateAsync(payload)
+      return result
+    } catch {
+      return undefined
+    }
+  }
 
   const updateMutation = useMutation({
     mutationFn: ({ id, payload }: { id: number; payload: FuelingRequest }) =>
@@ -58,7 +68,9 @@ export const useFuelings = (filters?: FuelingFilter) => {
     totalPages: data?.totalPages ?? 0,
     isLoading,
     error,
+    refetch,
     create: createMutation.mutate,
+    createAsync,
     update: updateMutation.mutate,
     delete: deleteMutation.mutate,
     isCreating: createMutation.isPending,
